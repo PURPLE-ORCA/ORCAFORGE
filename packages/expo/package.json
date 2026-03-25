@@ -1,0 +1,10 @@
+{
+  "name": "@orcaforge/expo",
+  "version": "1.0.0",
+  "type": "module",
+  "peerDependencies": {
+    "react": "^18.2.0",
+    "react-native": "*",
+    "expo": "*"
+  }
+}
