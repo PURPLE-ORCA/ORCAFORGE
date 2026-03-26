@@ -1,0 +1,15 @@
+{
+  "name": "orcaforge/laravel",
+  "description": "Core Laravel utilities and traits for OrcaForge.",
+  "type": "library",
+  "autoload": {
+    "psr-4": {
+      "OrcaForge\\Laravel\\": "src/"
+    }
+  },
+  "require": {
+    "php": "^8.2",
+    "illuminate/http": "^10.0|^11.0",
+    "illuminate/routing": "^10.0|^11.0"
+  }
+}
