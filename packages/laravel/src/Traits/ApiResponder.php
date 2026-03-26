@@ -2,59 +2,34 @@
 
 namespace OrcaForge\Laravel\Traits;
 
-use Illuminate\Http\JsonResponse;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Str;
 
-trait ApiResponder
+trait Filterable
 {
     /**
-     * Return a standardized success JSON response.
+     * Automatically apply requested filters to the query builder.
+     *
+     * @param Builder $query
+     * @param array $filters Usually request()->all() or request()->only([...])
      */
-    protected function success(mixed $data = null, string $message = 'Success', int $code = 200): JsonResponse
+    public function scopeFilter(Builder $query, array $filters = []): Builder
     {
-        return response()->json([
-            'status'  => 'success',
-            'message' => $message,
-            'data'    => $data,
-        ], $code);
-    }
+        foreach ($filters as $field => $value) {
+            // Skip empty values (but allow '0' or false)
+            if ($value === null || $value === '') {
+                continue;
+            }
 
-    /**
-     * Return a standardized error JSON response.
-     */
-    protected function error(string $message = 'An error occurred', int $code = 400, mixed $errors = null): JsonResponse
-    {
-        $payload = [
-            'status'  => 'error',
-            'message' => $message,
-        ];
+            // Convert 'search_query' to 'filterSearchQuery'
+            $method = 'filter' . Str::studly($field);
 
-        if ($errors !== null) {
-            $payload['errors'] = $errors;
+            // If the model has a specific method for this filter, call it
+            if (method_exists($this, $method)) {
+                $this->{$method}($query, $value);
+            }
         }
 
-        return response()->json($payload, $code);
-    }
-
-    /**
-     * Semantic wrappers for common HTTP responses
-     */
-    protected function created(mixed $data = null, string $message = 'Resource created successfully'): JsonResponse
-    {
-        return $this->success($data, $message, 201);
-    }
-
-    protected function unauthenticated(string $message = 'Unauthenticated'): JsonResponse
-    {
-        return $this->error($message, 401);
-    }
-
-    protected function forbidden(string $message = 'Forbidden'): JsonResponse
-    {
-        return $this->error($message, 403);
-    }
-
-    protected function notFound(string $message = 'Resource not found'): JsonResponse
-    {
-        return $this->error($message, 404);
+        return $query;
     }
 }
