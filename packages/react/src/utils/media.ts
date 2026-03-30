@@ -71,3 +71,45 @@ export async function convertToWebP(
     img.src = url;
   });
 }
+
+export interface ImageValidationResult {
+  valid: boolean;
+  message?: string;
+}
+
+export function validateAspectRatio(
+  file: File,
+  targetRatio: number,
+  tolerance = 0.05,
+  label = "Image",
+): Promise<ImageValidationResult> {
+  return new Promise((resolve) => {
+    const url = URL.createObjectURL(file);
+    const img = new window.Image();
+
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      const actualRatio = img.width / img.height;
+      const difference = Math.abs(actualRatio - targetRatio);
+
+      if (difference > tolerance) {
+        resolve({
+          valid: false,
+          message: `${file.name}: ${label} ratio mismatch. Expected ~${targetRatio.toFixed(2)}, got ${actualRatio.toFixed(2)} (${img.width}x${img.height}).`,
+        });
+      } else {
+        resolve({ valid: true });
+      }
+    };
+
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      resolve({
+        valid: false,
+        message: `${file.name}: Could not read image file.`,
+      });
+    };
+
+    img.src = url;
+  });
+}

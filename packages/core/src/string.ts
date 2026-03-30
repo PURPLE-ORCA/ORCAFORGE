@@ -19,3 +19,20 @@ export function getInitials(fullName: string | null | undefined): string {
 
   return `${firstInitial}${lastInitial}`.toUpperCase();
 }
+
+/**
+ * Generates a URL-safe slug, preserving Arabic characters.
+ */
+export function generateSlug(source: string): string {
+  if (!source) return "";
+  
+  return source
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim()
+    // Allow a-z, 0-9, Arabic block, spaces, and hyphens
+    .replace(/[^a-z0-9\u0600-\u06FF\s-]/g, "")
+    .replace(/[\s-]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
